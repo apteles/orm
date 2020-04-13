@@ -2,16 +2,20 @@
 declare(strict_types=1);
 namespace Apteles\ORM;
 
+use Exception;
 use Apteles\ORM\DML\Delete;
 use Apteles\ORM\DML\Insert;
 use Apteles\ORM\DML\Select;
 use Apteles\ORM\DML\Update;
 use Apteles\ORM\DML\Criteria\Filter;
+use Psr\Container\ContainerInterface;
 use Apteles\ORM\DML\Criteria\Criteria;
 
 abstract class Record
 {
     protected array $data = [];
+
+    protected ?ContainerInterface $container = null;
 
     public function __construct(?int $id = null)
     {
@@ -147,5 +151,16 @@ abstract class Record
         return (new $class)->load($id);
     }
   
-    abstract protected function getConnection(): Connection;
+    public function setContainer(ContainerInterface $container): void
+    {
+        $this->container = $container;
+    }
+
+    protected function getConnection(): Connection
+    {
+        if ($this->container) {
+            return $this->container->get(Connection::class);
+        }
+        throw new Exception(\sprintf("Has not connection defined, please implement method %s", __METHOD__));
+    }
 }

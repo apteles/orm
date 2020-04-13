@@ -39,8 +39,11 @@ class Criteria extends Expression
         $this->properties[$property] = $value;
     }
 
-    public function getProperty(string $property): string
+    public function getProperty(string $property): ?string
     {
-        return $this->properties[$property];
+        if (isset($this->properties[$property])) {
+            return (string) $this->properties[$property];
+        }
+        return null;
     }
 }

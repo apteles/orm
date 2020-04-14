@@ -68,6 +68,7 @@ abstract class Record
         $statement = $conn->getConn()->query($select->getInstruction());
         
         if ($result = $statement->fetchObject(\get_class($this))) {
+            $result->setContainer($this->container);
             return $result;
         }
 

@@ -68,7 +68,9 @@ abstract class Record
         $statement = $conn->getConn()->query($select->getInstruction());
         
         if ($result = $statement->fetchObject(\get_class($this))) {
-            $result->setContainer($this->container);
+            if ($this->container) {
+                $result->setContainer($this->container);
+            }
             return $result;
         }
 
@@ -128,6 +130,30 @@ abstract class Record
         $conn->make();
         
         return $conn->getConn()->exec($sql->getInstruction());
+    }
+
+    public function count(?Criteria $criteria = null): ?int
+    {
+        $sql = new Select;
+        $sql->table($this->table)
+            ->from(['count(*) AS count']);
+
+        if ($criteria) {
+            $sql->setCriteria($criteria);
+        }
+
+        $conn = $this->getConnection();
+        $conn->make();
+        $statement = $conn->getConn()->query($sql->getInstruction());
+        
+        if ($result = $statement->fetchObject(\get_class($this))) {
+            if ($this->container) {
+                $result->setContainer($this->container);
+            }
+            return (int) $result->count;
+        }
+
+        return null;
     }
 
     private function getLast(): ?int

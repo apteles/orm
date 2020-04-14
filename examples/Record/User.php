@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 use Apteles\ORM\Record;
 use Apteles\ORM\Connection;
+use Apteles\ORM\DML\Criteria\Filter;
+use Apteles\ORM\DML\Criteria\Criteria;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -24,3 +26,10 @@ class User extends Record
       ]);
     }
 }
+
+$user = User::find(1);
+$cri = new Criteria;
+$cri->add(new Filter('status', '<>', 'confirmed'));
+
+$count = $user->count($cri);
+\var_dump($count);

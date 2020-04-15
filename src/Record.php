@@ -77,6 +77,30 @@ abstract class Record
         return null;
     }
 
+    public function all(?Criteria $criteria = null): array
+    {
+        $select = new Select;
+        $select->table($this->table)
+                    ->from(['*']);
+        if ($criteria) {
+            $select->setCriteria($criteria);
+        }
+
+        $conn = $this->getConnection();
+        $conn->make();
+        
+        $statement = $conn->getConn()->query($select->getInstruction());
+        $collection = [];
+        while ($result = $statement->fetchObject(\get_class($this))) {
+            if ($this->container) {
+                $result->setContainer($this->container);
+            }
+            $collection[] = $result;
+        }
+
+        return $collection;
+    }
+
     public function fromArray(array $data): void
     {
         $this->data = $data;
@@ -144,15 +168,12 @@ abstract class Record
 
         $conn = $this->getConnection();
         $conn->make();
-        $statement = $conn->getConn()->query($sql->getInstruction());
-        
-        if ($result = $statement->fetchObject(\get_class($this))) {
-            if ($this->container) {
-                $result->setContainer($this->container);
-            }
-            return (int) $result->count;
-        }
+        $result = $conn->getConn()->query($sql->getInstruction());
 
+        if ($result) {
+            return (int) $result->fetch()['count'];
+        }
+      
         return null;
     }
 

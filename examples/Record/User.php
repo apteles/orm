@@ -5,6 +5,7 @@ use Apteles\ORM\Record;
 use Apteles\ORM\Connection;
 use Apteles\ORM\DML\Criteria\Filter;
 use Apteles\ORM\DML\Criteria\Criteria;
+use Apteles\ORM\DML\Criteria\Operator;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
@@ -27,9 +28,12 @@ class User extends Record
     }
 }
 
-$user = User::find(1);
+$user = new User;
 $cri = new Criteria;
-$cri->add(new Filter('status', '<>', 'confirmed'));
+$cri->add(new Filter('password', '<>', ''));
+$cri->setProperty('order', 'first_name');
+//$cri->setProperty('limit', 1);
+//$cri->add(new Filter('document', '=', ''), Operator::OR);
 
-$count = $user->count($cri);
-\var_dump($count);
+\var_dump($user->count($cri));
+\var_dump($user->all($cri));

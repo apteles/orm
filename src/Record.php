@@ -7,6 +7,7 @@ use Apteles\ORM\DML\Delete;
 use Apteles\ORM\DML\Insert;
 use Apteles\ORM\DML\Select;
 use Apteles\ORM\DML\Update;
+use Apteles\Paginator\Paginator;
 use Apteles\ORM\DML\Criteria\Filter;
 use Psr\Container\ContainerInterface;
 use Apteles\ORM\DML\Criteria\Criteria;
@@ -14,6 +15,8 @@ use Apteles\ORM\DML\Criteria\Criteria;
 abstract class Record
 {
     protected array $data = [];
+
+    protected ?Paginator $paginator = null;
 
     protected ?ContainerInterface $container = null;
 
@@ -85,7 +88,6 @@ abstract class Record
         if ($criteria) {
             $select->setCriteria($criteria);
         }
-
         $conn = $this->getConnection();
         $conn->make();
         
@@ -198,7 +200,38 @@ abstract class Record
 
         return (new $class)->load($id);
     }
-  
+
+    private function getDataPaginated(object $paginator): array
+    {
+        $cri = new Criteria;
+        $cri->add(new Filter('1', '=', 1));
+        $cri->setProperty('limit', $paginator->start);
+        $cri->setProperty('offset', $paginator->maxPerPage);
+       
+        $cri->setProperty('order', '2 ASC');
+      
+        return $this->all($cri);
+    }
+
+    public function paginate(?int $recordsPerPage = null): array
+    {
+        if (!$recordsPerPage) {
+            $recordsPerPage = 10;
+        }
+
+        $this->paginator = $this->getPaginator();
+        $this->paginator->setTotal($this->count());
+        $this->paginator->setPrefix($this->table);
+        return $this->paginator->getDataWithCallable(fn ($obj) =>  $this->getDataPaginated($obj), $recordsPerPage);
+    }
+
+    public function links(): Paginator
+    {
+        if ($this->paginator) {
+            return $this->paginator;
+        }
+    }
+      
     public function setContainer(ContainerInterface $container): void
     {
         $this->container = $container;
@@ -207,8 +240,22 @@ abstract class Record
     protected function getConnection(): Connection
     {
         if ($this->container) {
-            return $this->container->get(Connection::class);
+            if ($this->container->has(Connection::class)) {
+                return $this->container->get(Connection::class);
+            }
         }
+       
         throw new Exception(\sprintf("Has not connection defined, please implement method %s", __METHOD__));
+    }
+
+    protected function getPaginator(): Paginator
+    {
+        if ($this->container) {
+            if ($this->container->has(Paginator::class)) {
+                return $this->container->get(Paginator::class);
+            }
+        }
+       
+        return new Paginator;
     }
 }

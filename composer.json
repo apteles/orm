@@ -10,13 +10,20 @@
     }
   ],
   "require": {
-    "psr/container": "^1.0"
+    "psr/container": "^1.0",
+    "apteles/paginator": "dev-master"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.1",
     "friendsofphp/php-cs-fixer": "^2.16",
     "phpstan/phpstan": "^0.12.18"
   },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/apteles/paginator.git"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "Apteles\\ORM\\": "src"

@@ -55,7 +55,7 @@ abstract class Record
     {
         unset($this->data['id']);
     }
-  
+
     public function load(int $id): ?Record
     {
         $select = new Select;
@@ -69,7 +69,7 @@ abstract class Record
         $conn = $this->getConnection();
         $conn->make();
         $statement = $conn->getConn()->query($select->getInstruction());
-        
+
         if ($result = $statement->fetchObject(\get_class($this))) {
             if ($this->container) {
                 $result->setContainer($this->container);
@@ -90,7 +90,7 @@ abstract class Record
         }
         $conn = $this->getConnection();
         $conn->make();
-        
+
         $statement = $conn->getConn()->query($select->getInstruction());
         $collection = [];
         while ($result = $statement->fetchObject(\get_class($this))) {
@@ -154,7 +154,7 @@ abstract class Record
 
         $conn = $this->getConnection();
         $conn->make();
-        
+
         return $conn->getConn()->exec($sql->getInstruction());
     }
 
@@ -175,7 +175,7 @@ abstract class Record
         if ($result) {
             return (int) $result->fetch()['count'];
         }
-      
+
         return null;
     }
 
@@ -205,21 +205,20 @@ abstract class Record
     {
         $cri = new Criteria;
         $cri->add(new Filter('1', '=', 1));
-        $cri->setProperty('limit', $paginator->start);
-        $cri->setProperty('offset', $paginator->maxPerPage);
-       
+        $cri->setProperty('limit', $paginator->limit);
+        $cri->setProperty('offset', $paginator->offset);
         $cri->setProperty('order', '2 ASC');
-      
+
         return $this->all($cri);
     }
 
     public function paginate(?int $recordsPerPage = null): array
     {
-        if (!$recordsPerPage) {
-            $recordsPerPage = 10;
-        }
-
         $this->paginator = $this->getPaginator();
+
+        if (!$recordsPerPage) {
+            $recordsPerPage = $this->paginator->getConfig()['max_per_page'];
+        }
         $this->paginator->setTotal($this->count());
         $this->paginator->setPrefix($this->table);
         return $this->paginator->getDataWithCallable(fn ($obj) =>  $this->getDataPaginated($obj), $recordsPerPage);
@@ -231,7 +230,7 @@ abstract class Record
             return $this->paginator;
         }
     }
-      
+
     public function setContainer(ContainerInterface $container): void
     {
         $this->container = $container;
@@ -244,7 +243,7 @@ abstract class Record
                 return $this->container->get(Connection::class);
             }
         }
-       
+
         throw new Exception(\sprintf("Has not connection defined, please implement method %s", __METHOD__));
     }
 
@@ -255,7 +254,7 @@ abstract class Record
                 return $this->container->get(Paginator::class);
             }
         }
-       
+
         return new Paginator;
     }
 }

@@ -28,12 +28,23 @@ class User extends Record
     }
 }
 
-$user = new User;
+$users = new User;
 $cri = new Criteria;
 $cri->add(new Filter('password', '<>', ''));
 $cri->setProperty('order', 'first_name');
 //$cri->setProperty('limit', 1);
 //$cri->add(new Filter('document', '=', ''), Operator::OR);
 
-\var_dump($user->count($cri));
-\var_dump($user->all($cri));
+// \var_dump($user->count($cri));
+// \var_dump($user->all($cri));
+
+//\parse_url(PHP_URL_SCHEME);
+\var_dump($_SERVER);
+
+//die;
+
+foreach ($users->paginate(2) as $user) {
+    \var_dump($user);
+}
+
+print $users->links();
